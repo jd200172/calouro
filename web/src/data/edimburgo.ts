@@ -208,7 +208,23 @@ export const imovel = {
   vagas: 2,
   opcoesPlanta: 6,
   anuncio: 'https://carlosizidorocorretor.com.br/det-apto.php?Cod=1799',
-  corretor: 'Carlos Izidoro · CRECI 18469',
+  corretor: 'Carlos Izidoro',
+  creci: '18469',
+  // Contato publicado no anúncio do corretor (carlosizidorocorretor.com.br).
+  telefone: '47 99969-1535',
+  whatsapp: '5547999691535',
+  email: 'carlos@habitacaoimobiliaria.com.br',
+  registro: 'R.3-68987',
+  // Texto do próprio anúncio, não é copy inventada.
+  diferenciais: [
+    '6 opções de planta',
+    'Living integrado, com estar e jantar',
+    'Varanda com churrasqueira',
+    'Área de serviço independente',
+    'Piso porcelanato',
+    'Infraestrutura para ar-condicionado split',
+    'Hidrômetros individuais',
+  ],
   condominio: ['Piscinas adulto e infantil', 'Salão de festas', 'Academia', 'Brinquedoteca', 'Reaproveitamento de água pluvial', 'Portaria eletrônica', 'Acessibilidade completa'],
   galeria: [
     { src: base + 'piscina.jpg', legenda: 'Piscina' },

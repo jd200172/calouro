@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { Planta } from '../data/edimburgo'
 import { buildApartment, type Apartment } from '../walk/buildApartment'
 import { OLHO, blocked, inside, toPx, type Vec } from '../walk/geom'
+import { consumirEstarRealista } from '../walk/pedirRealista'
 
 const DOLL_CLIP = 1.22
 const WALK_CLIP = 5
 const DOLL_FOV = 46
 const WALK_FOV = 62
 
-type Modo = 'maquete' | 'caminhar' | 'visita'
+type Modo = 'maquete' | 'caminhar' | 'visita' | 'realista'
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2)
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v))
@@ -32,6 +34,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
     maquete: () => void
     caminhar: () => void
     visita: () => void
+    realista: () => void
     irPara: (px: number, py: number) => void
     assumir: () => void
   } | null>(null)
@@ -78,7 +81,12 @@ export function Walk3D({ planta }: { planta: Planta }) {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const euler = new THREE.Euler(0, 0, 0, 'YXZ')
     const pivot = new THREE.Object3D()
-    let mode: 'doll' | 'walk' | 'tour' = 'doll'
+    let mode: 'doll' | 'walk' | 'tour' | 'real' = 'doll'
+    let realRoot: THREE.Group | null = null
+    let realLoading = false
+    const hidden: THREE.Object3D[] = []
+    const realEye = new THREE.Vector3(2.4, 1.5, -1.2)
+    const realLook = new THREE.Vector3(0.55, 1.2, -0.15)
     let yaw = 0
     let pitch = -0.08
     const keys = new Set<string>()
@@ -335,7 +343,94 @@ export function Walk3D({ planta }: { planta: Planta }) {
       }
     }
 
+    const showMaquete = () => {
+      for (const o of hidden) o.visible = true
+      hidden.length = 0
+      if (realRoot) realRoot.visible = false
+      renderer.toneMappingExposure = 0.98
+    }
+
+    const hideMaquete = () => {
+      for (const child of apt.scene.children) {
+        if (child === realRoot || !child.visible) continue
+        child.visible = false
+        hidden.push(child)
+      }
+      if (realRoot) realRoot.visible = true
+    }
+
+    const enterReal = () => {
+      phase = null
+      caminhada = null
+      tween = null
+      markTour('idle')
+      orbit.enabled = false
+      mode = 'real'
+      setModo('realista')
+      hideMaquete()
+      apt.clip.constant = WALK_CLIP
+      camera.fov = 64
+      camera.updateProjectionMatrix()
+      camera.position.copy(realEye)
+      const dir = realLook.clone().sub(realEye).normalize()
+      yaw = Math.atan2(-dir.x, -dir.z)
+      pitch = Math.asin(dir.y)
+      euler.set(pitch, yaw, 0, 'YXZ')
+      camera.quaternion.setFromEuler(euler)
+      renderer.toneMappingExposure = 1.05
+      setPoi(null)
+    }
+
+    const goReal = () => {
+      if (planta.id !== 'a') return
+      if (mode === 'real') {
+        showMaquete()
+        goDoll()
+        return
+      }
+      if (realRoot) {
+        enterReal()
+        return
+      }
+      if (realLoading) return
+      realLoading = true
+      setModo('realista')
+      const base = `${import.meta.env.BASE_URL}imoveis/edimburgo/`
+      new GLTFLoader().load(
+        `${base}estar-realista.glb`,
+        (gltf) => {
+          const light = new THREE.TextureLoader().load(`${base}estar-realista-luz.png`)
+          light.colorSpace = THREE.NoColorSpace
+          light.flipY = false
+          light.channel = 1
+          gltf.scene.traverse((obj) => {
+            const mesh = obj as THREE.Mesh
+            if (!mesh.isMesh) return
+            const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+            for (const mat of mats) {
+              const std = mat as THREE.MeshStandardMaterial
+              if (!std.isMeshStandardMaterial) continue
+              std.lightMap = light
+              std.lightMapIntensity = 1
+              std.envMapIntensity = 0
+              std.needsUpdate = true
+            }
+          })
+          realRoot = gltf.scene
+          apt.scene.add(realRoot)
+          realLoading = false
+          enterReal()
+        },
+        undefined,
+        () => {
+          realLoading = false
+          setModo(mode === 'doll' ? 'maquete' : mode === 'walk' ? 'caminhar' : 'visita')
+        },
+      )
+    }
+
     const goDoll = () => {
+      showMaquete()
       phase = null
       caminhada = null
       markTour('idle')
@@ -346,6 +441,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
     }
 
     const goWalk = () => {
+      showMaquete()
       phase = null
       caminhada = null
       markTour('idle')
@@ -382,6 +478,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
         goDoll()
         return
       }
+      showMaquete()
       tween = null
       orbit.enabled = false
       mode = 'tour'
@@ -426,6 +523,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
     }
 
     const goPoint = (px: number, py: number) => {
+      showMaquete()
       const world = { x: (px - apt.geom.cx) * apt.geom.scale, z: (py - apt.geom.cy) * apt.geom.scale }
       const room = apt.rooms.find((r) => inside(world, r.poly))
       if (!room) return
@@ -451,7 +549,16 @@ export function Walk3D({ planta }: { planta: Planta }) {
       startTween(dest, look, WALK_FOV, WALK_CLIP, 'walk', clamp(camera.position.distanceTo(dest) / 2.2, 0.45, 1.3))
     }
 
-    api.current = { maquete: goDoll, caminhar: goWalk, visita: goTour, irPara: goPoint, assumir: () => mode === 'tour' && goWalk() }
+    api.current = { maquete: goDoll, caminhar: goWalk, visita: goTour, realista: goReal, irPara: goPoint, assumir: () => mode === 'tour' && goWalk() }
+
+    const aoPedirRealista = () => {
+      if (planta.id !== 'a') return
+      consumirEstarRealista()
+      if (mode === 'real') return
+      api.current?.realista()
+    }
+    window.addEventListener('calouro-realista', aoPedirRealista)
+    if (consumirEstarRealista() && planta.id === 'a') api.current?.realista()
 
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName
@@ -483,7 +590,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
       dragY = e.clientY
     }
     const onMove = (e: PointerEvent) => {
-      if (!dragging || mode !== 'walk' || tween) return
+      if (!dragging || (mode !== 'walk' && mode !== 'real') || tween) return
       const dx = e.clientX - dragX
       const dy = e.clientY - dragY
       dragX = e.clientX
@@ -644,6 +751,9 @@ export function Walk3D({ planta }: { planta: Planta }) {
         orbit.update()
       } else if (mode === 'tour') {
         updateTour()
+      } else if (mode === 'real') {
+        euler.set(pitch, yaw, 0, 'YXZ')
+        camera.quaternion.setFromEuler(euler)
       } else {
         camera.position.y = OLHO
         euler.set(pitch, yaw, 0, 'YXZ')
@@ -722,6 +832,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
     })
 
     return () => {
+      window.removeEventListener('calouro-realista', aoPedirRealista)
       renderer.setAnimationLoop(null)
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('keyup', onKeyUp)
@@ -740,6 +851,8 @@ export function Walk3D({ planta }: { planta: Planta }) {
   const hint =
     modo === 'visita'
       ? 'Caminhada a 1 m/s, com uma pausa curta em cada ambiente · mexa para assumir'
+      : modo === 'realista'
+        ? 'Estar com luz assada e texturas livres · arraste para olhar · a visita segue na maquete'
       : modo === 'caminhar'
         ? coarse
           ? 'Joystick para andar · arraste para olhar'
@@ -751,7 +864,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
   return (
     <div className="walk">
       <div ref={host} className="walk-canvas" tabIndex={0} />
-      <div ref={labels} className="walk-labels">
+      <div ref={labels} className="walk-labels" hidden={modo === 'realista'}>
         {planta.rooms.map((r) => (
           <div key={r.id} data-room={r.id} className={r.area < 2.6 ? 'walk-label sm' : 'walk-label'}>
             <b>{r.nome}</b>
@@ -768,6 +881,11 @@ export function Walk3D({ planta }: { planta: Planta }) {
             <button className={modo === 'caminhar' ? 'on' : ''} onClick={() => api.current?.caminhar()}>
               Caminhar
             </button>
+            {planta.id === 'a' && (
+              <button className={modo === 'realista' ? 'on' : ''} onClick={() => api.current?.realista()}>
+                Realista
+              </button>
+            )}
           </div>
           <button className={`walk-tour walk-hit ${modo === 'visita' ? 'on' : ''}`} onClick={() => api.current?.visita()}>
             {modo === 'visita' ? 'Encerrar visita' : 'Visita guiada'}
@@ -859,7 +977,7 @@ function drawMini(
   orbit: OrbitControls,
   canvas: HTMLCanvasElement | null,
   img: HTMLImageElement,
-  mode: 'doll' | 'walk' | 'tour',
+  mode: 'doll' | 'walk' | 'tour' | 'real',
   roomId: string,
   dir: THREE.Vector3,
 ) {
