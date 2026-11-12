@@ -1,0 +1,538 @@
+{
+ "fonte": "OpenStreetMap via Overpass API (ODbL)",
+ "gerado_em": "2026-11-12",
+ "centro": {
+  "lat": -26.8796,
+  "lon": -49.0782
+ },
+ "pontos": [
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.879767,
+   "lon": -49.078423,
+   "distancia_m": 29
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.880432,
+   "lon": -49.07779,
+   "distancia_m": 101
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.879361,
+   "lon": -49.080224,
+   "distancia_m": 203
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Farmácia Super Popular",
+   "lat": -26.879734,
+   "lon": -49.080352,
+   "distancia_m": 214
+  },
+  {
+   "tipo": "fitness_centre",
+   "categoria": "lazer",
+   "nome": "Academia Duggen",
+   "lat": -26.879461,
+   "lon": -49.080361,
+   "distancia_m": 215
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Farmácia do Gustavo",
+   "lat": -26.881865,
+   "lon": -49.076484,
+   "distancia_m": 303
+  },
+  {
+   "tipo": "bakery",
+   "categoria": "mercado",
+   "nome": "Padaria Alice",
+   "lat": -26.880897,
+   "lon": -49.081017,
+   "distancia_m": 314
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.881859,
+   "lon": -49.076161,
+   "distancia_m": 321
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.881045,
+   "lon": -49.081324,
+   "distancia_m": 349
+  },
+  {
+   "tipo": "sports_centre",
+   "categoria": "lazer",
+   "nome": "Recanto do Guerreiro",
+   "lat": -26.880882,
+   "lon": -49.081806,
+   "distancia_m": 385
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.878329,
+   "lon": -49.081973,
+   "distancia_m": 400
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.875988,
+   "lon": -49.07853,
+   "distancia_m": 401
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.875947,
+   "lon": -49.078393,
+   "distancia_m": 404
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.882629,
+   "lon": -49.075217,
+   "distancia_m": 447
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.877689,
+   "lon": -49.08223,
+   "distancia_m": 452
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.875905,
+   "lon": -49.080152,
+   "distancia_m": 452
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.875769,
+   "lon": -49.080053,
+   "distancia_m": 462
+  },
+  {
+   "tipo": "park",
+   "categoria": "lazer",
+   "nome": "Praça Bruxelas",
+   "lat": -26.884034,
+   "lon": -49.077825,
+   "distancia_m": 492
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.875578,
+   "lon": -49.08084,
+   "distancia_m": 516
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.878681,
+   "lon": -49.083516,
+   "distancia_m": 538
+  },
+  {
+   "tipo": "sports_centre",
+   "categoria": "lazer",
+   "nome": "Sociedade Esportiva Itoupava Norte",
+   "lat": -26.880761,
+   "lon": -49.083462,
+   "distancia_m": 538
+  },
+  {
+   "tipo": "fitness_centre",
+   "categoria": "lazer",
+   "nome": "Cross Experience",
+   "lat": -26.884378,
+   "lon": -49.079437,
+   "distancia_m": 542
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.874838,
+   "lon": -49.076317,
+   "distancia_m": 559
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.882841,
+   "lon": -49.083057,
+   "distancia_m": 601
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.874196,
+   "lon": -49.076137,
+   "distancia_m": 632
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.883516,
+   "lon": -49.073384,
+   "distancia_m": 645
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.874385,
+   "lon": -49.074657,
+   "distancia_m": 675
+  },
+  {
+   "tipo": "sports_centre",
+   "categoria": "lazer",
+   "nome": "Long Life Natação e Hidroginástica",
+   "lat": -26.885451,
+   "lon": -49.080499,
+   "distancia_m": 686
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.880823,
+   "lon": -49.085074,
+   "distancia_m": 696
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.884711,
+   "lon": -49.082534,
+   "distancia_m": 710
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Droga Raia",
+   "lat": -26.884343,
+   "lon": -49.083119,
+   "distancia_m": 717
+  },
+  {
+   "tipo": "sports_centre",
+   "categoria": "lazer",
+   "nome": "Long Life Tênis",
+   "lat": -26.88593,
+   "lon": -49.080125,
+   "distancia_m": 725
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.874134,
+   "lon": -49.08236,
+   "distancia_m": 732
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Super Popular",
+   "lat": -26.882389,
+   "lon": -49.085028,
+   "distancia_m": 745
+  },
+  {
+   "tipo": "fitness_centre",
+   "categoria": "lazer",
+   "nome": "Long Life Academia",
+   "lat": -26.885328,
+   "lon": -49.082589,
+   "distancia_m": 769
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.881287,
+   "lon": -49.085745,
+   "distancia_m": 772
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.88292,
+   "lon": -49.071349,
+   "distancia_m": 773
+  },
+  {
+   "tipo": "supermarket",
+   "categoria": "mercado",
+   "nome": "Supermercado Sani",
+   "lat": -26.873711,
+   "lon": -49.082414,
+   "distancia_m": 774
+  },
+  {
+   "tipo": "bus_stop",
+   "categoria": "transporte",
+   "nome": "Ponto de ônibus",
+   "lat": -26.883562,
+   "lon": -49.084744,
+   "distancia_m": 784
+  },
+  {
+   "tipo": "park",
+   "categoria": "lazer",
+   "nome": "Praça Eugen Pawlowsky",
+   "lat": -26.87559,
+   "lon": -49.08473,
+   "distancia_m": 785
+  },
+  {
+   "tipo": "clinic",
+   "categoria": "saude",
+   "nome": "Contraste Radiologia Odontológica",
+   "lat": -26.880758,
+   "lon": -49.086067,
+   "distancia_m": 792
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Stylo Farma",
+   "lat": -26.880685,
+   "lon": -49.086092,
+   "distancia_m": 793
+  },
+  {
+   "tipo": "supermarket",
+   "categoria": "mercado",
+   "nome": "Cooper Super Itoupava Norte",
+   "lat": -26.885366,
+   "lon": -49.083101,
+   "distancia_m": 802
+  },
+  {
+   "tipo": "sports_centre",
+   "categoria": "lazer",
+   "nome": "Guarani Esporte Clube",
+   "lat": -26.886968,
+   "lon": -49.080811,
+   "distancia_m": 855
+  },
+  {
+   "tipo": "fitness_centre",
+   "categoria": "lazer",
+   "nome": "Academia Blu Iron",
+   "lat": -26.877394,
+   "lon": -49.086877,
+   "distancia_m": 895
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Farmácia Preço Popular",
+   "lat": -26.886292,
+   "lon": -49.083626,
+   "distancia_m": 915
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Farma Sesi",
+   "lat": -26.886689,
+   "lon": -49.08313,
+   "distancia_m": 924
+  },
+  {
+   "tipo": "park",
+   "categoria": "lazer",
+   "nome": "Praça Curt Schoenfelder",
+   "lat": -26.887542,
+   "lon": -49.074878,
+   "distancia_m": 938
+  },
+  {
+   "tipo": "clinic",
+   "categoria": "saude",
+   "nome": "Botelho Hospital Dia da Visão",
+   "lat": -26.887181,
+   "lon": -49.082751,
+   "distancia_m": 952
+  },
+  {
+   "tipo": "supermarket",
+   "categoria": "mercado",
+   "nome": "Rede Fifo",
+   "lat": -26.881915,
+   "lon": -49.068774,
+   "distancia_m": 970
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Super Popular",
+   "lat": -26.881614,
+   "lon": -49.068676,
+   "distancia_m": 971
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Farmácia Preço Popular",
+   "lat": -26.880561,
+   "lon": -49.068411,
+   "distancia_m": 978
+  },
+  {
+   "tipo": "park",
+   "categoria": "lazer",
+   "nome": "Praça Hellmuth Schoenau",
+   "lat": -26.887105,
+   "lon": -49.083625,
+   "distancia_m": 989
+  },
+  {
+   "tipo": "school",
+   "categoria": "educacao",
+   "nome": "Escola de Educação Básica Professor João Widemann",
+   "lat": -26.887841,
+   "lon": -49.082126,
+   "distancia_m": 991
+  },
+  {
+   "tipo": "school",
+   "categoria": "educacao",
+   "nome": "Escola de Educação Básica Professor Heriberto Joseph Muller",
+   "lat": -26.87828,
+   "lon": -49.068296,
+   "distancia_m": 994
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Stylo Farma",
+   "lat": -26.880976,
+   "lon": -49.06827,
+   "distancia_m": 998
+  },
+  {
+   "tipo": "bakery",
+   "categoria": "mercado",
+   "nome": "Padaria Fortaleza",
+   "lat": -26.880908,
+   "lon": -49.06824,
+   "distancia_m": 1000
+  },
+  {
+   "tipo": "kindergarten",
+   "categoria": "educacao",
+   "nome": "Meninos & Meninas",
+   "lat": -26.887345,
+   "lon": -49.083404,
+   "distancia_m": 1000
+  },
+  {
+   "tipo": "park",
+   "categoria": "lazer",
+   "nome": "Praça Governador Jorge Lacerda",
+   "lat": -26.888251,
+   "lon": -49.082907,
+   "distancia_m": 1064
+  },
+  {
+   "tipo": "school",
+   "categoria": "educacao",
+   "nome": "Escola de Educação Básica Doutor Max Tavares d'Amaral",
+   "lat": -26.872388,
+   "lon": -49.085468,
+   "distancia_m": 1075
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Farmácia Luciano",
+   "lat": -26.873384,
+   "lon": -49.069752,
+   "distancia_m": 1084
+  },
+  {
+   "tipo": "pharmacy",
+   "categoria": "saude",
+   "nome": "Panvel",
+   "lat": -26.879683,
+   "lon": -49.067151,
+   "distancia_m": 1097
+  },
+  {
+   "tipo": "kindergarten",
+   "categoria": "educacao",
+   "nome": "Espaço Educacional Aquarela",
+   "lat": -26.873496,
+   "lon": -49.08753,
+   "distancia_m": 1146
+  },
+  {
+   "tipo": "sports_centre",
+   "categoria": "lazer",
+   "nome": "Guarda Jiu-Jitsu",
+   "lat": -26.889502,
+   "lon": -49.082207,
+   "distancia_m": 1165
+  },
+  {
+   "tipo": "supermarket",
+   "categoria": "mercado",
+   "nome": "Super Ferreira",
+   "lat": -26.879353,
+   "lon": -49.066177,
+   "distancia_m": 1194
+  },
+  {
+   "tipo": "doctors",
+   "categoria": "saude",
+   "nome": "Center Life Fisioterapia",
+   "lat": -26.872905,
+   "lon": -49.087648,
+   "distancia_m": 1195
+  }
+ ]
+}
