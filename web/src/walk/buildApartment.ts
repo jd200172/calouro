@@ -46,7 +46,11 @@ export type Apartment = {
   dispose: () => void
 }
 
-const ROTEIRO = ['estar', 'cozinha', 'varanda', 'suite', 'dormitorio']
+// Ordem de uma visita real, da entrada social até os quartos.
+const ORDEM: Record<string, string[]> = {
+  a: ['estar', 'cozinha', 'servico', 'varanda', 'circulacao', 'bwc1', 'dormitorio', 'tecnica', 'suite', 'bwc2'],
+  b: ['estar', 'cozinha', 'servico', 'varanda', 'circulacao', 'bwc1', 'dormitorio', 'tecnica', 'suite', 'bwc2'],
+}
 
 const add = (a: Vec, b: Vec, s = 1): Vec => ({ x: a.x + b.x * s, z: a.z + b.z * s })
 const sub = (a: Vec, b: Vec): Vec => ({ x: a.x - b.x, z: a.z - b.z })
@@ -1026,17 +1030,25 @@ export function buildApartment(planta: Planta, renderer: THREE.WebGLRenderer, sh
   const polys = geom.rooms.map((r) => r.poly)
 
   const tour: TourStop[] = []
-  for (const id of ROTEIRO) {
+  const ordem = ORDEM[planta.id] ?? geom.rooms.map((r) => r.id)
+  for (const id of ordem) {
     const room = roomById(id)
     if (!room) continue
     const lookAt = focus.get(id) ?? room.interior
-    let stand = room.clearance >= 0.4 ? pickStand(room, lookAt) : null
+    let stand: Vec | null = room.clearance >= 0.45 ? pickStand(room, lookAt) : null
     let look = lookAt
     if (!stand) {
       const ext = standOutside(room)
-      if (!ext) continue
-      stand = ext.eye
-      look = ext.look
+      if (ext) {
+        stand = ext.eye
+        look = ext.look
+      }
+    }
+    if (!stand) {
+      const visto = olharDeFora(room)
+      if (!visto) continue
+      stand = visto.eye
+      look = visto.look
     }
     tour.push({
       roomId: room.id,
@@ -1044,7 +1056,7 @@ export function buildApartment(planta: Planta, renderer: THREE.WebGLRenderer, sh
       area: room.area,
       foto: room.foto,
       eye: new THREE.Vector3(stand.x, OLHO, stand.z),
-      look: new THREE.Vector3(look.x, 1.0, look.z),
+      look: new THREE.Vector3(look.x, 1.05, look.z),
     })
   }
 
@@ -1084,6 +1096,39 @@ export function buildApartment(planta: Planta, renderer: THREE.WebGLRenderer, sh
   function sees(a: Vec, b: Vec, poly: Vec[]) {
     for (let i = 1; i <= 5; i++) if (!inside(lerp(a, b, i / 6), poly)) return false
     return true
+  }
+
+  function olharDeFora(room: RoomPoly): { eye: Vec; look: Vec } | null {
+    let vizinho: RoomPoly | null = null
+    let melhor = 0
+    for (const other of geom.rooms) {
+      if (other.id === room.id) continue
+      for (let i = 0; i < room.poly.length; i++) {
+        const a = room.poly[i]
+        const b = room.poly[(i + 1) % room.poly.length]
+        const d = sub(b, a)
+        const l = len(d)
+        if (l < 0.4) continue
+        const u = { x: d.x / l, z: d.z / l }
+        const n = { x: -u.z, z: u.x }
+        const m = mid(a, b)
+        const fora = inside(add(m, n, 0.18), other.poly) || inside(add(m, n, -0.18), other.poly)
+        if (fora && l > melhor) {
+          vizinho = other
+          melhor = l
+        }
+      }
+    }
+    if (!vizinho) return null
+    const dir = unit(sub(room.interior, vizinho.interior))
+    let eye = vizinho.interior
+    for (const passo of [0.35, 0.7, 1.05]) {
+      const p = add(vizinho.interior, dir, passo)
+      if (!inside(p, vizinho.poly) || edgeClear(p, vizinho.poly) < 0.22) continue
+      if (blocked(p.x, p.z, blocks, cols, polys, thresholds)) continue
+      eye = p
+    }
+    return { eye, look: focus.get(room.id) ?? room.interior }
   }
 
   function standOutside(room: RoomPoly) {

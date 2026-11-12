@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import type { Planta } from '../data/edimburgo'
-import { buildApartment, type Apartment, type TourStop } from '../walk/buildApartment'
+import { buildApartment, type Apartment } from '../walk/buildApartment'
 import { OLHO, blocked, inside, toPx, type Vec } from '../walk/geom'
 
 const DOLL_CLIP = 1.22
@@ -169,20 +169,40 @@ export function Walk3D({ planta }: { planta: Planta }) {
       }
     }
 
-    type Move = {
-      kind: 'move'
-      from: THREE.Vector3
-      to: THREE.Vector3
-      look: THREE.Vector3
-      t: number
-      dur: number
-      fly: boolean
+    const PASSO = 1
+    const PAUSA = 2
+    const PAUSA_FOTO = 2.4
+
+    type Approach = { kind: 'approach'; t: number; dur: number; from: THREE.Vector3; to: THREE.Vector3; look: THREE.Vector3; index: number }
+    type Walk = {
+      kind: 'walk' | 'pause'
+      pts: THREE.Vector3[]
+      cum: number[]
+      total: number
+      cursor: number
+      pause: number
       index: number
-      settle: boolean
+      look: THREE.Vector3
+      marks: { at: number; index: number; look: THREE.Vector3; pause: number }[]
+      next: number
     }
-    type Hold = { kind: 'hold'; index: number; t: number; dur: number; pos: THREE.Vector3; look: THREE.Vector3 }
     type Rise = { kind: 'rise'; t: number; dur: number; from: THREE.Vector3; fromQ: THREE.Quaternion }
-    let phase: Move | Hold | Rise | null = null
+    let phase: Approach | Walk | Rise | null = null
+    const along = new THREE.Vector3()
+
+    const pointAt = (pts: THREE.Vector3[], cum: number[], s: number, out: THREE.Vector3) => {
+      if (s <= 0) return out.copy(pts[0])
+      const last = cum[cum.length - 1]
+      if (s >= last) return out.copy(pts[pts.length - 1])
+      let i = 1
+      while (i < cum.length && cum[i] < s) i++
+      const span = cum[i] - cum[i - 1] || 1
+      return out.lerpVectors(pts[i - 1], pts[i], (s - cum[i - 1]) / span)
+    }
+
+    const markTour = (state: string) => {
+      el.dataset.tour = state
+    }
 
     const polys = apt.rooms.map((r) => r.poly)
     const roomAt = (p: Vec) => apt.rooms.find((r) => inside(p, r.poly))
@@ -246,27 +266,79 @@ export function Walk3D({ planta }: { planta: Planta }) {
       return pts
     }
 
-    let legs: { to: THREE.Vector3; look: THREE.Vector3; fly: boolean; settle: boolean; index: number }[] = []
-    const startLeg = () => {
-      const leg = legs.shift()
-      if (!leg) return
-      const from = camera.position.clone()
-      const dist = from.distanceTo(leg.to)
-      phase = {
-        kind: 'move',
-        from,
-        to: leg.to,
-        look: leg.look,
-        t: 0,
-        dur: reduce ? 0.01 : leg.fly ? clamp(dist / 6.5, 1.45, 2.4) : clamp(dist / 1.12, 0.55, 2.35),
-        fly: leg.fly,
-        index: leg.index,
-        settle: leg.settle,
+    const dampAngle = (a: number, b: number, lambda: number, dt: number) => {
+      let d = b - a
+      while (d > Math.PI) d -= Math.PI * 2
+      while (d < -Math.PI) d += Math.PI * 2
+      return a + d * (1 - Math.exp(-lambda * dt))
+    }
+
+    const olharPara = (target: THREE.Vector3, dt: number, snap = false) => {
+      const q = quatLook(camera.position, target)
+      euler.setFromQuaternion(q, 'YXZ')
+      if (snap) {
+        yaw = euler.y
+        pitch = euler.x
+      } else {
+        yaw = dampAngle(yaw, euler.y, 3.6, dt)
+        pitch = dampAngle(pitch, euler.x, 3.6, dt)
+      }
+      camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'))
+    }
+
+    let tourClock = 0
+    let tourLast = 0
+
+    const montarCaminho = (inicio: Vec | null): Walk => {
+      const pts: THREE.Vector3[] = []
+      const marks: Walk['marks'] = []
+      const add = (x: number, z: number) => {
+        const p = new THREE.Vector3(x, OLHO, z)
+        const prev = pts[pts.length - 1]
+        if (prev && prev.distanceTo(p) < 0.08) return
+        pts.push(p)
+      }
+      const metros = () => {
+        let s = 0
+        for (let i = 1; i < pts.length; i++) s += pts[i].distanceTo(pts[i - 1])
+        return s
+      }
+      if (inicio) add(inicio.x, inicio.z)
+      apt.tour.forEach((stop, index) => {
+        const from = pts.length
+          ? { x: pts[pts.length - 1].x, z: pts[pts.length - 1].z }
+          : { x: stop.eye.x, z: stop.eye.z }
+        if (!pts.length) add(stop.eye.x, stop.eye.z)
+        else for (const p of routeTo(from, { x: stop.eye.x, z: stop.eye.z })) add(p.x, p.z)
+        marks.push({
+          at: metros(),
+          index,
+          look: stop.look.clone(),
+          pause: reduce ? 0.15 : stop.foto ? PAUSA_FOTO : PAUSA,
+        })
+      })
+      const cum = [0]
+      for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]))
+      const primeira = marks[0]
+      const noComeco = (primeira?.at ?? 1) < 0.12
+      return {
+        kind: noComeco ? 'pause' : 'walk',
+        pts,
+        cum,
+        total: cum[cum.length - 1] ?? 0,
+        cursor: 0,
+        pause: noComeco ? (primeira?.pause ?? 0) : 0,
+        index: primeira?.index ?? 0,
+        look: primeira?.look.clone() ?? new THREE.Vector3(),
+        marks,
+        next: noComeco ? 1 : 0,
       }
     }
 
     const goDoll = () => {
       phase = null
+      caminhada = null
+      markTour('idle')
       mode = 'doll'
       setModo('maquete')
       setPoi(null)
@@ -275,6 +347,8 @@ export function Walk3D({ planta }: { planta: Planta }) {
 
     const goWalk = () => {
       phase = null
+      caminhada = null
+      markTour('idle')
       if (mode === 'walk' && !tween) return
       if (mode === 'tour' && camera.position.y < 2.3) {
         mode = 'walk'
@@ -297,23 +371,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
       startTween(dest, look, WALK_FOV, WALK_CLIP, 'walk', 1.15)
     }
 
-    const beginMove = (index: number, fly: boolean) => {
-      const stop = apt.tour[index]
-      const goal = { x: stop.eye.x, z: stop.eye.z }
-      const pts = fly ? [goal] : routeTo({ x: camera.position.x, z: camera.position.z }, goal)
-      legs = pts.map((p, i) => {
-        const last = i === pts.length - 1
-        const nxt = pts[Math.min(i + 1, pts.length - 1)]
-        return {
-          to: new THREE.Vector3(p.x, OLHO, p.z),
-          look: last ? stop.look.clone() : new THREE.Vector3(nxt.x, 1.15, nxt.z),
-          fly: fly && i === 0,
-          settle: last,
-          index,
-        }
-      })
-      startLeg()
-    }
+    let caminhada: Walk | null = null
 
     const goTour = () => {
       if (!apt.tour.length) {
@@ -328,7 +386,31 @@ export function Walk3D({ planta }: { planta: Planta }) {
       orbit.enabled = false
       mode = 'tour'
       setModo('visita')
-      beginMove(0, camera.position.y > 2.2)
+      const noAlto = camera.position.y > 2.2
+      caminhada = montarCaminho(noAlto ? null : { x: camera.position.x, z: camera.position.z })
+      const pausas = caminhada.marks.reduce((s, m) => s + m.pause, 0)
+      el.dataset.tourMeters = caminhada.total.toFixed(1)
+      el.dataset.tourSeconds = (caminhada.total / PASSO + pausas + (noAlto ? 2.4 : 0) + 2.2).toFixed(0)
+      tourClock = 0
+      tourLast = performance.now()
+      el.dataset.tourClock = '0'
+      if (noAlto) {
+        phase = {
+          kind: 'approach',
+          t: 0,
+          dur: reduce ? 0.01 : 2.4,
+          from: camera.position.clone(),
+          to: caminhada.pts[0].clone(),
+          look: caminhada.look.clone(),
+          index: caminhada.index,
+        }
+      } else {
+        phase = caminhada
+        apt.clip.constant = WALK_CLIP
+        camera.fov = WALK_FOV
+        camera.updateProjectionMatrix()
+      }
+      markTour(phase.kind)
     }
 
     const nearestFree = (x: number, z: number): Vec | null => {
@@ -450,54 +532,75 @@ export function Walk3D({ planta }: { planta: Planta }) {
     const planImg = new Image()
     planImg.src = planta.imagem
     const look = new THREE.Vector3()
-    const ahead = new THREE.Vector3()
     const forward = new THREE.Vector3()
     const right = new THREE.Vector3()
     const clock = new THREE.Clock()
     const tmp = new THREE.Vector2()
 
-    const updateTour = (dt: number) => {
+    const updateTour = () => {
       if (!phase) return
-      phase.t += dt
-      const u = ease(Math.min(1, phase.t / phase.dur))
-      if (phase.kind === 'move') {
+      const now = performance.now()
+      const dt = Math.min(0.2, Math.max(0, (now - tourLast) / 1000))
+      tourLast = now
+      if (dt === 0) return
+      tourClock += dt
+      el.dataset.tourClock = tourClock.toFixed(2)
+      if (phase.kind === 'approach') {
+        phase.t += dt
+        const u = ease(Math.min(1, phase.t / phase.dur))
         camera.position.lerpVectors(phase.from, phase.to, u)
-        if (phase.fly) {
-          camera.lookAt(phase.look)
-          apt.clip.constant = THREE.MathUtils.lerp(DOLL_CLIP, WALK_CLIP, u)
-          camera.fov = THREE.MathUtils.lerp(DOLL_FOV, WALK_FOV, u)
-          camera.updateProjectionMatrix()
-        } else if (phase.settle) {
-          ahead.copy(phase.from).lerp(phase.to, Math.min(1, u + 0.18))
-          ahead.y = 1.2
-          const settle = THREE.MathUtils.smoothstep(u, 0.4, 1)
-          look.copy(ahead).lerp(phase.look, settle)
-          camera.lookAt(look)
-        } else camera.lookAt(phase.look)
-        if (phase.t >= phase.dur) {
-          if (!phase.settle) startLeg()
-          else {
-            const stop: TourStop = apt.tour[phase.index]
-            phase = {
-              kind: 'hold',
-              index: phase.index,
-              t: 0,
-              dur: reduce ? 0.2 : stop.foto ? 3.05 : 2.25,
-              pos: stop.eye.clone(),
-              look: stop.look.clone(),
-            }
+        olharPara(phase.look, dt, phase.t >= phase.dur)
+        apt.clip.constant = THREE.MathUtils.lerp(DOLL_CLIP, WALK_CLIP, u)
+        camera.fov = THREE.MathUtils.lerp(DOLL_FOV, WALK_FOV, u)
+        camera.updateProjectionMatrix()
+        if (phase.t >= phase.dur && caminhada) {
+          phase = caminhada
+          camera.position.copy(caminhada.pts[0])
+          camera.position.y = OLHO
+          olharPara(caminhada.look, dt, true)
+        }
+      } else if (phase.kind === 'walk' || phase.kind === 'pause') {
+        const walk = phase
+        if (walk.pause > 0) {
+          const entrou = walk.kind !== 'pause'
+          walk.kind = 'pause'
+          walk.pause -= dt
+          camera.position.copy(pointAt(walk.pts, walk.cum, walk.cursor, along))
+          camera.position.y = OLHO
+          olharPara(walk.look, dt, entrou)
+        } else if (walk.cursor < walk.total - 0.001) {
+          walk.kind = 'walk'
+          walk.cursor = Math.min(walk.total, walk.cursor + PASSO * dt)
+          camera.position.copy(pointAt(walk.pts, walk.cum, walk.cursor, along))
+          camera.position.y = OLHO
+          const marca = walk.marks[walk.next]
+          const perto = marca && walk.cursor >= marca.at - 0.05
+          if (perto && marca) {
+            walk.cursor = marca.at
+            walk.pause = marca.pause
+            walk.index = marca.index
+            walk.look = marca.look
+            walk.next += 1
+            walk.kind = 'pause'
+            camera.position.copy(pointAt(walk.pts, walk.cum, walk.cursor, along))
+            camera.position.y = OLHO
+            olharPara(marca.look, dt, true)
+          } else {
+            const alvo = pointAt(walk.pts, walk.cum, Math.min(walk.total, walk.cursor + 1.15), look)
+            alvo.y = 1.2
+            olharPara(alvo, dt)
           }
+        } else {
+          phase = { kind: 'rise', t: 0, dur: reduce ? 0.01 : 2.2, from: camera.position.clone(), fromQ: camera.quaternion.clone() }
         }
-      } else if (phase.kind === 'hold') {
-        camera.position.copy(phase.pos)
-        camera.lookAt(phase.look)
-        if (phase.t >= phase.dur) {
-          const next = phase.index + 1
-          if (next >= apt.tour.length) {
-            phase = { kind: 'rise', t: 0, dur: reduce ? 0.01 : 1.65, from: camera.position.clone(), fromQ: camera.quaternion.clone() }
-          } else beginMove(next, false)
+        apt.clip.constant = WALK_CLIP
+        if (Math.abs(camera.fov - WALK_FOV) > 0.1) {
+          camera.fov = WALK_FOV
+          camera.updateProjectionMatrix()
         }
-      } else {
+      } else if (phase.kind === 'rise') {
+        phase.t += dt
+        const u = ease(Math.min(1, phase.t / phase.dur))
         camera.position.lerpVectors(phase.from, apt.doll.pos, u)
         camera.quaternion.slerpQuaternions(phase.fromQ, quatLook(apt.doll.pos, apt.doll.target), u)
         apt.clip.constant = THREE.MathUtils.lerp(WALK_CLIP, DOLL_CLIP, u)
@@ -505,6 +608,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
         camera.updateProjectionMatrix()
         if (phase.t >= phase.dur) {
           phase = null
+          caminhada = null
           mode = 'doll'
           orbit.target.copy(apt.doll.target)
           camera.position.copy(apt.doll.pos)
@@ -512,11 +616,14 @@ export function Walk3D({ planta }: { planta: Planta }) {
           orbit.update()
           setModo('maquete')
           setPoi(null)
+          markTour('idle')
         }
       }
+      if (phase) markTour(phase.kind)
       if (phase && bar.current) {
-        const idx = phase.kind === 'rise' ? apt.tour.length : phase.kind === 'hold' ? phase.index + 0.7 : phase.index + 0.35 * Math.min(1, phase.t / phase.dur)
-        bar.current.style.width = `${(idx / apt.tour.length) * 100}%`
+        if (phase.kind === 'approach') bar.current.style.width = '0%'
+        else if (phase.kind === 'rise') bar.current.style.width = '100%'
+        else bar.current.style.width = `${(phase.cursor / Math.max(phase.total, 0.01)) * 100}%`
       }
     }
 
@@ -536,7 +643,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
       } else if (mode === 'doll') {
         orbit.update()
       } else if (mode === 'tour') {
-        updateTour(dt)
+        updateTour()
       } else {
         camera.position.y = OLHO
         euler.set(pitch, yaw, 0, 'YXZ')
@@ -570,7 +677,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
       const eye = camera.position
       const here = apt.rooms.find((r) => inside({ x: eye.x, z: eye.z }, r.poly))
       const stopNow =
-        mode === 'tour' && phase && (phase.kind === 'hold' || (phase.kind === 'move' && phase.fly))
+        mode === 'tour' && phase && (phase.kind === 'pause' || phase.kind === 'approach')
           ? apt.tour[phase.index]
           : undefined
       const id = stopNow?.roomId ?? here?.id ?? ''
@@ -632,7 +739,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
 
   const hint =
     modo === 'visita'
-      ? 'Visita guiada · mova o mouse, o joystick ou WASD para assumir'
+      ? 'Caminhada a 1 m/s, com uma pausa curta em cada ambiente · mexa para assumir'
       : modo === 'caminhar'
         ? coarse
           ? 'Joystick para andar · arraste para olhar'
