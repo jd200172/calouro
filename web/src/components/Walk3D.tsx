@@ -5,6 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { Planta } from '../data/edimburgo'
 import { buildApartment, type Apartment } from '../walk/buildApartment'
 import { OLHO, blocked, inside, toPx, type Vec } from '../walk/geom'
+import { consumirEstarRealista } from '../walk/pedirRealista'
 
 const DOLL_CLIP = 1.22
 const WALK_CLIP = 5
@@ -550,6 +551,15 @@ export function Walk3D({ planta }: { planta: Planta }) {
 
     api.current = { maquete: goDoll, caminhar: goWalk, visita: goTour, realista: goReal, irPara: goPoint, assumir: () => mode === 'tour' && goWalk() }
 
+    const aoPedirRealista = () => {
+      if (planta.id !== 'a') return
+      consumirEstarRealista()
+      if (mode === 'real') return
+      api.current?.realista()
+    }
+    window.addEventListener('calouro-realista', aoPedirRealista)
+    if (consumirEstarRealista() && planta.id === 'a') api.current?.realista()
+
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
@@ -822,6 +832,7 @@ export function Walk3D({ planta }: { planta: Planta }) {
     })
 
     return () => {
+      window.removeEventListener('calouro-realista', aoPedirRealista)
       renderer.setAnimationLoop(null)
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('keyup', onKeyUp)

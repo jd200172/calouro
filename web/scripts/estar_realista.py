@@ -395,9 +395,10 @@ def aim(ob, target):
 
 
 def preview(path):
-    bpy.context.scene.cycles.samples = 24
-    bpy.context.scene.render.resolution_x = 960
-    bpy.context.scene.render.resolution_y = 600
+    scene = bpy.context.scene
+    scene.cycles.samples = int(os.environ.get("ESTAR_SAMPLES", "24"))
+    scene.render.resolution_x = int(os.environ.get("ESTAR_W", "960"))
+    scene.render.resolution_y = int(os.environ.get("ESTAR_H", "600"))
     bpy.context.scene.render.filepath = path
     bpy.context.scene.render.image_settings.file_format = "JPEG"
     bpy.context.scene.render.image_settings.quality = 85
