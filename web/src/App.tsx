@@ -61,10 +61,10 @@ export default function App() {
             <h2>Por dentro</h2>
             <span className="tag">{planta.nome}</span>
           </div>
-          <Walk3D planta={planta} />
+          <Walk3D key={planta.id} planta={planta} />
           <p className="note">
-            Modelo gerado a partir da planta: paredes levantadas sobre a imagem da construtora, pé-direito de 2,60 m.
-            Proporções aproximadas.
+            Modelo gerado a partir da planta: paredes, vãos e pisos levantados sobre o desenho da construtora, pé-direito de 2,60 m.
+            O mobiliário é ilustrativo, para dar escala. Proporções aproximadas.
           </p>
         </section>
 
