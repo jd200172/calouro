@@ -145,6 +145,23 @@ export default function App() {
             Modelo gerado a partir da planta: paredes, vãos e pisos levantados sobre o desenho da construtora, pé-direito de
             2,60 m. O mobiliário é ilustrativo, para dar escala. Proporções aproximadas.
           </p>
+          {planta.id === 'a' && (
+            <figure className="filme">
+              <video
+                controls
+                preload="none"
+                poster={`${import.meta.env.BASE_URL}imoveis/edimburgo/visita-poster.jpg`}
+                src={`${import.meta.env.BASE_URL}imoveis/edimburgo/visita-planta-a.mp4`}
+              >
+                Seu navegador não reproduz este vídeo.
+              </video>
+              <figcaption>
+                Área social da planta A, filmada no Blender. A câmera sai da entrada, cruza o estar e chega na varanda, a
+                cerca de 1 m/s e a 1,60 m de altura. A luz do dia entra pela varanda: o desenho não marca janelas nos
+                quartos, e a circulação de 1,24 m² não cabe neste passeio.
+              </figcaption>
+            </figure>
+          )}
         </section>
 
         <section id="entorno" className="bloco">
