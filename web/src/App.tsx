@@ -1,23 +1,41 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { imovel, plantas } from './data/edimburgo'
+import { catalogo, type Item } from './data/catalogo'
 import { FloorPlan } from './components/FloorPlan'
 import { Walk3D } from './components/Walk3D'
 import { pedirEstarRealista } from './walk/pedirRealista'
 import { Entorno } from './components/Entorno'
 import { Pagamento } from './components/Pagamento'
+import { Sugestoes } from './components/Sugestoes'
+import { Busca } from './components/Busca'
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
 const hero = `${import.meta.env.BASE_URL}imoveis/edimburgo/estar-hero.jpg`
 const zap = `https://wa.me/${imovel.whatsapp}?text=${encodeURIComponent('Olá, Carlos. Vi o Edifício Edimburgo no Calouro e quero conversar sobre o apartamento.')}`
+const atual = catalogo.find((i) => i.id === 'edimburgo')!
 
 export default function App() {
   const [pid, setPid] = useState(plantas[0].id)
+  const [busca, setBusca] = useState(false)
+  const [aviso, setAviso] = useState<string | null>(null)
   const planta = plantas.find((p) => p.id === pid)!
+
+  useEffect(() => {
+    if (!aviso) return
+    const t = setTimeout(() => setAviso(null), 3500)
+    return () => clearTimeout(t)
+  }, [aviso])
 
   const verEstar = () => {
     setPid('a')
     document.getElementById('3d')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     window.setTimeout(pedirEstarRealista, 700)
+  }
+
+  const selecionar = (i: Item) => {
+    setBusca(false)
+    if (i.id === atual.id) window.scrollTo({ top: 0, behavior: 'smooth' })
+    else setAviso(`Exemplo: a página de "${i.nome}" ainda não existe no protótipo.`)
   }
 
   return (
@@ -27,13 +45,21 @@ export default function App() {
           Calouro
         </a>
         <nav>
-          <a href="#porque">O apartamento</a>
+          <a href="#fotos">Fotos</a>
+          <a href="#entorno">Onde fica</a>
+          <a href="#pagamento">Pagamento</a>
           <a href="#planta">Planta</a>
           <a href="#3d">Passeio</a>
-          <a href="#entorno">Vizinhança</a>
-          <a href="#pagamento">Pagamento</a>
-          <a href="#contato">Contato</a>
+          <a href="#sugestoes">Veja também</a>
         </nav>
+        <div className="acoes">
+          <button type="button" className="btn btn-sec" onClick={() => setBusca(true)}>
+            Ver todos
+          </button>
+          <a className="btn" href="#contato">
+            Contato
+          </a>
+        </div>
       </header>
 
       <main>
@@ -61,6 +87,126 @@ export default function App() {
             </div>
             <p className="hero-nota">Imagem gerada no Blender a partir da planta A. Proporções aproximadas.</p>
           </div>
+        </section>
+
+        <section id="fotos" className="bloco">
+          <div className="bloco-cab">
+            <h2>Fotos da construtora</h2>
+            <span className="tag">ilustrativas</span>
+          </div>
+          <div className="galeria">
+            {imovel.galeria.map((g) => (
+              <figure key={g.src}>
+                <img src={g.src} alt={g.legenda} loading="lazy" />
+                <figcaption>{g.legenda}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
+        <section id="entorno" className="bloco">
+          <div className="bloco-cab">
+            <h2>Onde fica</h2>
+            <span className="tag">Itoupava Norte</span>
+          </div>
+          <p className="lead">
+            O endereço do prédio ainda não está confirmado. O mapa marca o centro do bairro e o que fica a poucos minutos a
+            pé.
+          </p>
+          <Entorno />
+          <div className="enchente">
+            <div>
+              <h3>Enchente</h3>
+              <p>
+                Cota de enchente do endereço e comparação com as maiores cheias registradas em Blumenau. Fonte prevista:
+                AlertaBlu / Defesa Civil.
+              </p>
+            </div>
+            <div className="enchente-valor">
+              <span className="k">Exemplo</span>
+              <span className="l">aguardando o endereço do prédio</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="pagamento" className="bloco">
+          <div className="bloco-cab">
+            <h2>Como pagar</h2>
+          </div>
+          <p className="lead">
+            Preço e entrada saem do anúncio. Os reforços anuais e o CUB não estão publicados: entram como exemplo, para você
+            ver a forma da parcela.
+          </p>
+          <Pagamento />
+        </section>
+
+        <section id="contato" className="bloco contato">
+          <div>
+            <p className="eyebrow escuro">Corretor do lançamento</p>
+            <h2>{imovel.corretor}</h2>
+            <p className="lead">
+              CRECI {imovel.creci}. Ele vende os lançamentos da {imovel.construtora} e responde por este anúncio.
+            </p>
+            <p className="contato-dados">
+              <a href={zap} target="_blank" rel="noreferrer">
+                {imovel.telefone}
+              </a>
+              <a href={`mailto:${imovel.email}`}>{imovel.email}</a>
+            </p>
+            <div className="hero-acoes">
+              <a className="btn" href={zap} target="_blank" rel="noreferrer">
+                Chamar no WhatsApp
+              </a>
+              <a className="btn btn-sec" href={imovel.anuncio} target="_blank" rel="noreferrer">
+                Ver o anúncio original
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section id="planta" className="bloco">
+          <div className="bloco-cab">
+            <h2>A planta, cômodo a cômodo</h2>
+            <div className="seg">
+              {plantas.map((p) => (
+                <button key={p.id} className={p.id === pid ? 'on' : ''} onClick={() => setPid(p.id)}>
+                  {p.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="lead">
+            O anúncio oferece {imovel.opcoesPlanta} opções de planta. Aqui estão a A e a B, com a metragem de cada ambiente
+            como no desenho da construtora.
+          </p>
+          <FloorPlan key={planta.id} planta={planta} />
+        </section>
+
+        <section id="3d" className="bloco">
+          <div className="bloco-cab">
+            <h2>Caminhe antes de visitar</h2>
+            <span className="tag">{planta.nome}</span>
+          </div>
+          <p className="lead">
+            Na planta A, o estar abre em modo realista: luz assada e texturas livres. O restante do apartamento, e a planta
+            B, seguem na maquete para a visita guiada.
+          </p>
+          <Walk3D key={planta.id} planta={planta} />
+          <p className="note">
+            Modelo gerado a partir da planta: paredes, vãos e pisos levantados sobre o desenho da construtora, pé-direito de
+            2,60 m. O mobiliário é ilustrativo, para dar escala. Proporções aproximadas.
+          </p>
+        </section>
+
+        <section id="condominio" className="bloco">
+          <div className="bloco-cab">
+            <h2>No condomínio</h2>
+          </div>
+          <ul className="cond">
+            {imovel.condominio.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
         </section>
 
         <section id="porque" className="bloco">
@@ -113,129 +259,31 @@ export default function App() {
           </p>
         </section>
 
-        <section id="planta" className="bloco">
+        <section id="sugestoes" className="bloco">
           <div className="bloco-cab">
-            <h2>A planta, cômodo a cômodo</h2>
-            <div className="seg">
-              {plantas.map((p) => (
-                <button key={p.id} className={p.id === pid ? 'on' : ''} onClick={() => setPid(p.id)}>
-                  {p.nome}
-                </button>
-              ))}
-            </div>
+            <h2>Se gostou deste, veja também</h2>
           </div>
-          <p className="lead">
-            O anúncio oferece {imovel.opcoesPlanta} opções de planta. Aqui estão a A e a B, com a metragem de cada ambiente
-            como no desenho da construtora.
-          </p>
-          <FloorPlan key={planta.id} planta={planta} />
-        </section>
-
-        <section id="3d" className="bloco">
-          <div className="bloco-cab">
-            <h2>Caminhe antes de visitar</h2>
-            <span className="tag">{planta.nome}</span>
-          </div>
-          <p className="lead">
-            Na planta A, o estar abre em modo realista: luz assada e texturas livres. O restante do apartamento, e a planta
-            B, seguem na maquete para a visita guiada.
-          </p>
-          <Walk3D key={planta.id} planta={planta} />
-          <p className="note">
-            Modelo gerado a partir da planta: paredes, vãos e pisos levantados sobre o desenho da construtora, pé-direito de
-            2,60 m. O mobiliário é ilustrativo, para dar escala. Proporções aproximadas.
-          </p>
-        </section>
-
-        <section id="entorno" className="bloco">
-          <div className="bloco-cab">
-            <h2>A vizinhança</h2>
-            <span className="tag">Itoupava Norte</span>
-          </div>
-          <p className="lead">
-            O endereço do prédio ainda não está confirmado. O mapa marca o centro do bairro e o que fica a poucos minutos a
-            pé.
-          </p>
-          <Entorno />
-          <div className="enchente">
-            <div>
-              <h3>Enchente</h3>
-              <p>
-                Cota de enchente do endereço e comparação com as maiores cheias registradas em Blumenau. Fonte prevista:
-                AlertaBlu / Defesa Civil.
-              </p>
-            </div>
-            <div className="enchente-valor">
-              <span className="k">Exemplo</span>
-              <span className="l">aguardando o endereço do prédio</span>
-            </div>
-          </div>
-        </section>
-
-        <section id="pagamento" className="bloco">
-          <div className="bloco-cab">
-            <h2>Como pagar</h2>
-          </div>
-          <p className="lead">
-            Preço e entrada saem do anúncio. Os reforços anuais e o CUB não estão publicados: entram como exemplo, para você
-            ver a forma da parcela.
-          </p>
-          <Pagamento />
-        </section>
-
-        <section id="fotos" className="bloco">
-          <div className="bloco-cab">
-            <h2>Fotos da construtora</h2>
-            <span className="tag">ilustrativas</span>
-          </div>
-          <div className="galeria">
-            {imovel.galeria.map((g) => (
-              <figure key={g.src}>
-                <img src={g.src} alt={g.legenda} loading="lazy" />
-                <figcaption>{g.legenda}</figcaption>
-              </figure>
-            ))}
-          </div>
-          <h3 className="cond-tit">No condomínio</h3>
-          <ul className="cond">
-            {imovel.condominio.map((c) => (
-              <li key={c}>{c}</li>
-            ))}
-          </ul>
-        </section>
-
-        <section id="contato" className="bloco contato">
-          <div>
-            <p className="eyebrow escuro">Corretor do lançamento</p>
-            <h2>{imovel.corretor}</h2>
-            <p className="lead">
-              CRECI {imovel.creci}. Ele vende os lançamentos da {imovel.construtora} e responde por este anúncio.
-            </p>
-            <p className="contato-dados">
-              <a href={zap} target="_blank" rel="noreferrer">
-                {imovel.telefone}
-              </a>
-              <a href={`mailto:${imovel.email}`}>{imovel.email}</a>
-            </p>
-            <div className="hero-acoes">
-              <a className="btn" href={zap} target="_blank" rel="noreferrer">
-                Chamar no WhatsApp
-              </a>
-              <a className="btn btn-sec" href={imovel.anuncio} target="_blank" rel="noreferrer">
-                Ver o anúncio original
-              </a>
-            </div>
-          </div>
+          <Sugestoes atual={atual} onSelecionar={selecionar} onVerTodos={() => setBusca(true)} />
         </section>
       </main>
 
       <footer className="rodape">
-        <span>
-          {imovel.corretor} · CRECI {imovel.creci} · {imovel.construtora}
-        </span>
-        <span>
-          Protótipo Calouro. Dados do <a href={imovel.anuncio}>anúncio original</a>.
-        </span>
+        <div>
+          <p>
+            {imovel.corretor} · CRECI {imovel.creci} · {imovel.construtora}
+          </p>
+          {imovel.legal.map((t) => (
+            <p key={t} className="legal">
+              {t}
+            </p>
+          ))}
+        </div>
+        <div className="rodape-dir">
+          <span>
+            Protótipo Calouro. Dados do <a href={imovel.anuncio}>anúncio original</a>. Imóveis marcados como exemplo são
+            fictícios.
+          </span>
+        </div>
       </footer>
 
       <div className="barra">
@@ -250,6 +298,9 @@ export default function App() {
           WhatsApp
         </a>
       </div>
+
+      <Busca aberta={busca} onFechar={() => setBusca(false)} onSelecionar={selecionar} />
+      {aviso && <div className="aviso">{aviso}</div>}
     </>
   )
 }

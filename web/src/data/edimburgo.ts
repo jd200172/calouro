@@ -225,6 +225,10 @@ export const imovel = {
     'Infraestrutura para ar-condicionado split',
     'Hidrômetros individuais',
   ],
+  legal: [
+    'Imagens ilustrativas, de caráter promocional. Móveis e eletrodomésticos têm dimensões comerciais e não fazem parte do contrato (Lei 4.591/64). Plantas com sugestão de decoração; as cores podem variar em relação à obra.',
+    'Registro de Incorporação R.3-68987, 2º Ofício de Registro de Imóveis de Blumenau/SC.',
+  ],
   condominio: ['Piscinas adulto e infantil', 'Salão de festas', 'Academia', 'Brinquedoteca', 'Reaproveitamento de água pluvial', 'Portaria eletrônica', 'Acessibilidade completa'],
   galeria: [
     { src: base + 'piscina.jpg', legenda: 'Piscina' },
