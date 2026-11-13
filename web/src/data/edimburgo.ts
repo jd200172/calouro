@@ -36,7 +36,7 @@ const R = (x1: number, y1: number, x2: number, y2: number): Pt[] => [
   [x1, y2],
 ]
 
-const base = '/imoveis/edimburgo/'
+const base = `${import.meta.env.BASE_URL}imoveis/edimburgo/`
 
 export const plantaA: Planta = {
   id: 'a',
