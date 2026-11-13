@@ -36,8 +36,7 @@ const R = (x1: number, y1: number, x2: number, y2: number): Pt[] => [
   [x1, y2],
 ]
 
-// BASE_URL traz o subcaminho do Pages (/calouro/) e termina com barra.
-const base = `${import.meta.env.BASE_URL}imoveis/edimburgo/`
+const base = '/imoveis/edimburgo/'
 
 export const plantaA: Planta = {
   id: 'a',
@@ -208,23 +207,7 @@ export const imovel = {
   vagas: 2,
   opcoesPlanta: 6,
   anuncio: 'https://carlosizidorocorretor.com.br/det-apto.php?Cod=1799',
-  corretor: 'Carlos Izidoro',
-  creci: '18469',
-  // Contato publicado no anúncio do corretor (carlosizidorocorretor.com.br).
-  telefone: '47 99969-1535',
-  whatsapp: '5547999691535',
-  email: 'carlos@habitacaoimobiliaria.com.br',
-  registro: 'R.3-68987',
-  // Texto do próprio anúncio, não é copy inventada.
-  diferenciais: [
-    '6 opções de planta',
-    'Living integrado, com estar e jantar',
-    'Varanda com churrasqueira',
-    'Área de serviço independente',
-    'Piso porcelanato',
-    'Infraestrutura para ar-condicionado split',
-    'Hidrômetros individuais',
-  ],
+  corretor: 'Carlos Izidoro · CRECI 18469',
   legal: [
     'Imagens ilustrativas, de caráter promocional. Móveis e eletrodomésticos têm dimensões comerciais e não fazem parte do contrato (Lei 4.591/64). Plantas com sugestão de decoração; as cores podem variar em relação à obra.',
     'Registro de Incorporação R.3-68987, 2º Ofício de Registro de Imóveis de Blumenau/SC.',

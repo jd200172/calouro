@@ -44,11 +44,11 @@ export function Pagamento() {
       <div className="pag-form">
         <Campo label="Preço" value={preco} onChange={setPreco} step={1000} sufixo="R$" />
         <Campo label="Entrada" value={entrada} onChange={setEntrada} step={1000} sufixo="R$" />
-        <Campo label="Reforços anuais (exemplo)" value={nReforcos} onChange={setNReforcos} sufixo="x" />
-        <Campo label="Valor do reforço (exemplo)" value={reforco} onChange={setReforco} step={1000} sufixo="R$" />
+        <Campo label="Reforços anuais" value={nReforcos} onChange={setNReforcos} sufixo="x" />
+        <Campo label="Valor do reforço" value={reforco} onChange={setReforco} step={1000} sufixo="R$" />
         <Campo label="Parcelas mensais" value={parcelas} onChange={setParcelas} sufixo="meses" />
-        <Campo label="CUB atual (exemplo)" value={cub} onChange={setCub} step={10} sufixo="R$" />
-        <Campo label="Variação do CUB ao ano (exemplo)" value={cubAno} onChange={setCubAno} step={0.5} sufixo="%" />
+        <Campo label="CUB atual (referência)" value={cub} onChange={setCub} step={10} sufixo="R$" />
+        <Campo label="Variação do CUB ao ano" value={cubAno} onChange={setCubAno} step={0.5} sufixo="%" />
       </div>
       <div className="pag-out">
         <div className="kpis">

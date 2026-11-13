@@ -1,17 +1,14 @@
 import { useEffect, useState } from 'react'
 import { imovel, plantas } from './data/edimburgo'
-import { catalogo, type Item } from './data/catalogo'
+import { brl, catalogo, type Item } from './data/catalogo'
+import { contato, linkContato } from './data/contato'
 import { FloorPlan } from './components/FloorPlan'
 import { Walk3D } from './components/Walk3D'
-import { pedirEstarRealista } from './walk/pedirRealista'
 import { Entorno } from './components/Entorno'
 import { Pagamento } from './components/Pagamento'
 import { Sugestoes } from './components/Sugestoes'
 import { Busca } from './components/Busca'
 
-const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
-const hero = `${import.meta.env.BASE_URL}imoveis/edimburgo/estar-hero.jpg`
-const zap = `https://wa.me/${imovel.whatsapp}?text=${encodeURIComponent('Olá, Carlos. Vi o Edifício Edimburgo no Calouro e quero conversar sobre o apartamento.')}`
 const atual = catalogo.find((i) => i.id === 'edimburgo')!
 
 export default function App() {
@@ -19,18 +16,13 @@ export default function App() {
   const [busca, setBusca] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)
   const planta = plantas.find((p) => p.id === pid)!
+  const link = linkContato(imovel.nome)
 
   useEffect(() => {
     if (!aviso) return
     const t = setTimeout(() => setAviso(null), 3500)
     return () => clearTimeout(t)
   }, [aviso])
-
-  const verEstar = () => {
-    setPid('a')
-    document.getElementById('3d')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    window.setTimeout(pedirEstarRealista, 700)
-  }
 
   const selecionar = (i: Item) => {
     setBusca(false)
@@ -41,19 +33,17 @@ export default function App() {
   return (
     <>
       <header className="top">
-        <a className="marca" href="#topo">
-          Calouro
-        </a>
+        <span className="marca">Calouro</span>
         <nav>
           <a href="#fotos">Fotos</a>
           <a href="#entorno">Onde fica</a>
           <a href="#pagamento">Pagamento</a>
           <a href="#planta">Planta</a>
-          <a href="#3d">Passeio</a>
+          <a href="#3d">Por dentro</a>
           <a href="#sugestoes">Veja também</a>
         </nav>
         <div className="acoes">
-          <button type="button" className="btn btn-sec" onClick={() => setBusca(true)}>
+          <button className="btn ghost" onClick={() => setBusca(true)}>
             Ver todos
           </button>
           <a className="btn" href="#contato">
@@ -63,36 +53,30 @@ export default function App() {
       </header>
 
       <main>
-        <section className="hero" id="topo">
-          <img src={hero} alt="Estar do Edifício Edimburgo, com painel de madeira, sofá e janela para a varanda" />
-          <div className="hero-folha">
+        <section className="hero">
+          <img src={imovel.galeria[0].src} alt="" />
+          <div className="hero-txt">
             <p className="eyebrow">
               Lançamento · {imovel.bairro}, {imovel.cidade}
             </p>
             <h1>{imovel.nome}</h1>
             <p className="sub">
-              {imovel.dormitorios} dormitórios, {imovel.suites} suíte · {imovel.vagas} vagas · entrega em {imovel.entrega}
+              {imovel.dormitorios} dormitórios ({imovel.suites} suíte) · {imovel.vagas} vagas · {imovel.opcoesPlanta}{' '}
+              opções de planta · entrega em {imovel.entrega}
             </p>
             <p className="preco">
-              a partir de <b>{brl(imovel.preco)}</b>
-              <span>entrada {brl(imovel.entrada)}</span>
+              a partir de <b>{brl(imovel.preco)}</b> · entrada {brl(imovel.entrada)}
             </p>
-            <div className="hero-acoes">
-              <button type="button" className="btn" onClick={verEstar}>
-                Entrar no estar
-              </button>
-              <a className="btn btn-sec" href={zap} target="_blank" rel="noreferrer">
-                Falar com o Carlos
-              </a>
-            </div>
-            <p className="hero-nota">Imagem gerada no Blender a partir da planta A. Proporções aproximadas.</p>
+            <a className="btn" href={link} target="_blank" rel="noreferrer">
+              Falar com o Carlos
+            </a>
           </div>
         </section>
 
         <section id="fotos" className="bloco">
           <div className="bloco-cab">
-            <h2>Fotos da construtora</h2>
-            <span className="tag">ilustrativas</span>
+            <h2>Fotos</h2>
+            <span className="tag">imagens ilustrativas da construtora</span>
           </div>
           <div className="galeria">
             {imovel.galeria.map((g) => (
@@ -107,12 +91,7 @@ export default function App() {
         <section id="entorno" className="bloco">
           <div className="bloco-cab">
             <h2>Onde fica</h2>
-            <span className="tag">Itoupava Norte</span>
           </div>
-          <p className="lead">
-            O endereço do prédio ainda não está confirmado. O mapa marca o centro do bairro e o que fica a poucos minutos a
-            pé.
-          </p>
           <Entorno />
           <div className="enchente">
             <div>
@@ -123,50 +102,33 @@ export default function App() {
               </p>
             </div>
             <div className="enchente-valor">
-              <span className="k">Exemplo</span>
-              <span className="l">aguardando o endereço do prédio</span>
+              <span className="k">—</span>
+              <span className="l">aguardando endereço</span>
             </div>
           </div>
         </section>
 
         <section id="pagamento" className="bloco">
           <div className="bloco-cab">
-            <h2>Como pagar</h2>
+            <h2>Pagamento direto com a construtora</h2>
           </div>
-          <p className="lead">
-            Preço e entrada saem do anúncio. Os reforços anuais e o CUB não estão publicados: entram como exemplo, para você
-            ver a forma da parcela.
-          </p>
           <Pagamento />
         </section>
 
         <section id="contato" className="bloco contato">
           <div>
-            <p className="eyebrow escuro">Corretor do lançamento</p>
-            <h2>{imovel.corretor}</h2>
-            <p className="lead">
-              CRECI {imovel.creci}. Ele vende os lançamentos da {imovel.construtora} e responde por este anúncio.
-            </p>
-            <p className="contato-dados">
-              <a href={zap} target="_blank" rel="noreferrer">
-                {imovel.telefone}
-              </a>
-              <a href={`mailto:${imovel.email}`}>{imovel.email}</a>
-            </p>
-            <div className="hero-acoes">
-              <a className="btn" href={zap} target="_blank" rel="noreferrer">
-                Chamar no WhatsApp
-              </a>
-              <a className="btn btn-sec" href={imovel.anuncio} target="_blank" rel="noreferrer">
-                Ver o anúncio original
-              </a>
-            </div>
+            <h2>Fale com o Carlos</h2>
+            <p>Visita, plantas disponíveis e condições de pagamento do {imovel.nome}.</p>
+            <p className="note">Protótipo: canal ({contato.canal}) e prazo de resposta a definir com o corretor.</p>
           </div>
+          <a className="btn grande" href={link} target="_blank" rel="noreferrer">
+            Chamar no {contato.canal}
+          </a>
         </section>
 
         <section id="planta" className="bloco">
           <div className="bloco-cab">
-            <h2>A planta, cômodo a cômodo</h2>
+            <h2>Planta</h2>
             <div className="seg">
               {plantas.map((p) => (
                 <button key={p.id} className={p.id === pid ? 'on' : ''} onClick={() => setPid(p.id)}>
@@ -175,26 +137,18 @@ export default function App() {
               ))}
             </div>
           </div>
-          <p className="lead">
-            O anúncio oferece {imovel.opcoesPlanta} opções de planta. Aqui estão a A e a B, com a metragem de cada ambiente
-            como no desenho da construtora.
-          </p>
           <FloorPlan key={planta.id} planta={planta} />
         </section>
 
         <section id="3d" className="bloco">
           <div className="bloco-cab">
-            <h2>Caminhe antes de visitar</h2>
+            <h2>Por dentro</h2>
             <span className="tag">{planta.nome}</span>
           </div>
-          <p className="lead">
-            Na planta A, o estar abre em modo realista: luz assada e texturas livres. O restante do apartamento, e a planta
-            B, seguem na maquete para a visita guiada.
-          </p>
-          <Walk3D key={planta.id} planta={planta} />
+          <Walk3D planta={planta} />
           <p className="note">
-            Modelo gerado a partir da planta: paredes, vãos e pisos levantados sobre o desenho da construtora, pé-direito de
-            2,60 m. O mobiliário é ilustrativo, para dar escala. Proporções aproximadas.
+            Modelo gerado a partir da planta: paredes levantadas sobre a imagem da construtora, pé-direito de 2,60 m.
+            Proporções aproximadas.
           </p>
         </section>
 
@@ -209,56 +163,6 @@ export default function App() {
           </ul>
         </section>
 
-        <section id="porque" className="bloco">
-          <div className="bloco-cab">
-            <h2>Por que este apartamento</h2>
-            <span className="tag">{imovel.construtora}</span>
-          </div>
-          <p className="lead">
-            O Edimburgo fica em Itoupava Norte, em Blumenau. O anúncio do Carlos descreve um living integrado, varanda com
-            churrasqueira e área de serviço independente, com entrega em {imovel.entrega}. O pagamento é direto com a{' '}
-            {imovel.construtora}, corrigido pelo CUB.
-          </p>
-          <dl className="fatos">
-            <div>
-              <dt>A partir de</dt>
-              <dd>{brl(imovel.preco)}</dd>
-            </div>
-            <div>
-              <dt>Entrada</dt>
-              <dd>{brl(imovel.entrada)}</dd>
-            </div>
-            <div>
-              <dt>Saldo</dt>
-              <dd>até {imovel.parcelasMax} meses, só pelo CUB</dd>
-            </div>
-            <div>
-              <dt>Entrega</dt>
-              <dd>{imovel.entrega}</dd>
-            </div>
-            <div>
-              <dt>Planta</dt>
-              <dd>
-                {imovel.dormitorios} dormitórios, {imovel.suites} suíte, {imovel.banheiros} banheiros
-              </dd>
-            </div>
-            <div>
-              <dt>Garagem</dt>
-              <dd>{imovel.vagas} vagas</dd>
-            </div>
-          </dl>
-          <ul className="cond">
-            {imovel.diferenciais.map((d) => (
-              <li key={d}>{d}</li>
-            ))}
-          </ul>
-          <p className="note">
-            O anúncio também cita parcelamento em até 85 meses e a possibilidade de estudar entrada e saldo com
-            financiamento bancário depois das chaves. Registro de incorporação {imovel.registro}, 2º Ofício de Registro de
-            Imóveis de Blumenau/SC.
-          </p>
-        </section>
-
         <section id="sugestoes" className="bloco">
           <div className="bloco-cab">
             <h2>Se gostou deste, veja também</h2>
@@ -270,7 +174,7 @@ export default function App() {
       <footer className="rodape">
         <div>
           <p>
-            {imovel.corretor} · CRECI {imovel.creci} · {imovel.construtora}
+            {imovel.corretor} · {imovel.construtora}
           </p>
           {imovel.legal.map((t) => (
             <p key={t} className="legal">
@@ -279,23 +183,22 @@ export default function App() {
           ))}
         </div>
         <div className="rodape-dir">
+          <a href={link} target="_blank" rel="noreferrer">
+            Falar com o Carlos
+          </a>
           <span>
-            Protótipo Calouro. Dados do <a href={imovel.anuncio}>anúncio original</a>. Imóveis marcados como exemplo são
-            fictícios.
+            Protótipo. Dados do <a href={imovel.anuncio}>anúncio original</a>. Imóveis marcados como exemplo são fictícios.
           </span>
         </div>
       </footer>
 
-      <div className="barra">
-        <div>
+      <div className="barra-contato">
+        <span>
+          <small>a partir de</small>
           <b>{brl(imovel.preco)}</b>
-          <span>a partir de</span>
-        </div>
-        <button type="button" onClick={verEstar}>
-          Ver o estar
-        </button>
-        <a href={zap} target="_blank" rel="noreferrer">
-          WhatsApp
+        </span>
+        <a className="btn" href={link} target="_blank" rel="noreferrer">
+          Falar com o Carlos
         </a>
       </div>
 

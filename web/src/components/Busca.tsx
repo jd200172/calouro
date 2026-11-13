@@ -21,7 +21,7 @@ export function Busca({ aberta, onFechar, onSelecionar }: { aberta: boolean; onF
     <dialog ref={ref} className="busca" onClose={onFechar} onClick={(e) => e.target === ref.current && onFechar()}>
       <div className="busca-cab">
         <h2>Todos os imóveis</h2>
-        <button className="btn btn-sec" onClick={onFechar}>
+        <button className="btn ghost" onClick={onFechar}>
           Fechar
         </button>
       </div>
